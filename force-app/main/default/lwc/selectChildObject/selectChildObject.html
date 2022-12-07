@@ -1,0 +1,15 @@
+<template>
+    <div if:true={isLoading}>
+        <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+    </div>
+    <template if:false={isLoading} >
+        <c-searchable-data-table table-style="height: 300px;" search-placeholder="Search .."
+                key-field="id"
+                table-data={childRelationships}
+                columns={columns}
+                max-row-selection="1"
+                onrowselection={rowSelected}>
+        </c-searchable-data-table>
+    </template>  
+    
+</template>

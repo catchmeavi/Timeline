@@ -1,0 +1,18 @@
+{
+  "status": 0,
+  "result": [
+    {
+      "createdById": "005Dn000002Cfj1IAC",
+      "createdByName": "Avijit Chakraborty",
+      "createdDate": "2022-12-02T02:29:17.000Z",
+      "fileName": "permissionsets/Timeline_Permission.permissionset",
+      "fullName": "Timeline_Permission",
+      "id": "0PSDn000000zsn8OAA",
+      "lastModifiedById": "005Dn000002Cfj1IAC",
+      "lastModifiedByName": "Avijit Chakraborty",
+      "lastModifiedDate": "2022-12-02T02:30:57.000Z",
+      "manageableState": "unmanaged",
+      "type": "PermissionSet"
+    }
+  ]
+}

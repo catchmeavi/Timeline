@@ -1,0 +1,487 @@
+/* 
+ *  Copyright (c) 2018, salesforce.com, inc.
+ *  All rights reserved.
+ *  SPDX-License-Identifier: BSD-3-Clause
+ *  For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
+ */
+
+import { LightningElement, track, api,wire } from 'lwc';
+import getTimelineItemData from '@salesforce/apex/RecordTimelineDataProvider.getTimelineItemData';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { loadScript } from 'lightning/platformResourceLoader';
+import MOMENT_JS from '@salesforce/resourceUrl/moment_js';
+import CURRENT_USER_ID from '@salesforce/user/Id';
+
+import No_data_found from '@salesforce/label/c.No_data_found';
+import Error_loading_data from '@salesforce/label/c.Error_loading_data';
+import Invalid_parameters from '@salesforce/label/c.Invalid_parameters'
+import Either_recordId_or_configId_are_empty from '@salesforce/label/c.Either_recordId_or_configId_are_empty'
+import You from '@salesforce/label/c.You';
+import Notes from '@salesforce/label/c.Notes';
+import Upcoming from '@salesforce/label/c.Upcoming';
+import LANG from '@salesforce/i18n/lang';
+import LOCALE from '@salesforce/i18n/locale';
+
+import { publish, MessageContext } from 'lightning/messageService';
+import timelineItemState from '@salesforce/messageChannel/TimelineItemState__c';
+
+export default class ActivityTimeline extends LightningElement {
+    @api recordId;
+    @api configId;
+    @api headerTitle;
+    @api headerIcon;
+    @api showHeader = false;
+    @api additionalMargin;
+    @api availableObjects;
+    @api initialObjectSelection;
+    @api objectFilters;
+    @api showSearch=false;
+    @api showExpandCollapse=false;
+    @track childRecords;
+    @track timelineItemsByMonth;
+    @track hasTimelineData;
+    @track error;
+    @track errorMsg;
+    @track momentJSLoaded = false;
+    @track showFilter = false;
+    @track dateFilterSelection = "all_time";
+    @track isLoading = true;
+    @track serverData;
+    @track searchText;
+
+    @wire(MessageContext)
+    messageContext;
+
+    subscription;
+
+    label = {
+        No_data_found,
+        Error_loading_data,
+        Invalid_parameters,
+        Either_recordId_or_configId_are_empty
+    }
+    connectedCallback() {
+        
+        Promise.all([
+            loadScript(this, MOMENT_JS),
+        ]).then(() => {
+            this.momentJSLoaded = true;
+            //set the locale with values from translated labels
+            //console.log(new Date() + ':MomentJS loaded');
+            getTimelineItemData({ confIdOrName: this.configId, recordId: this.recordId, dateFilter: this.dateFilterSelection })
+                .then(data => {
+                    this.processTimelineData(data);
+                })
+                .catch(error => {
+                    this.errorLoadingData(error);
+                });
+
+        })
+            .catch(error => {
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Error loading MomentJS',
+                        message: error.message,
+                        variant: 'error',
+                    }),
+                );
+            });
+    }
+
+    refreshData() {
+        this.isLoading = true;
+        getTimelineItemData({ confIdOrName: this.configId, recordId: this.recordId, dateFilter: this.dateFilterSelection })
+            .then(data => {
+                this.processTimelineData(data);
+            })
+            .catch(error => {
+                this.errorLoadingData(error);
+            });
+
+    }
+
+    processTimelineData(data) {
+        moment.locale(LOCALE);
+        moment.lang(LANG);
+        try {
+
+            this.isLoading = false;
+            this.hasTimelineData = false;
+            if (data) {
+                this.serverData=data;
+                this.childRecords = new Array();
+                let unsortedRecords = new Array();
+                //have to deep clone in order to Task and other standard objects
+                let configs = data.configuration.Timeline_Child_Objects__r;
+                this.availableObjects = new Array();
+                this.initialObjectSelection = new Array();
+                for (let i = 0; i < configs.length; i++) {
+                    if(configs[i].Object__c === 'ContentDocumentLink'){
+                        this.availableObjects.push({ "label": Notes, "value": Notes });
+                        this.initialObjectSelection.push(Notes);
+                    }else{
+                        if(configs[i].Data_Provider_Type__c === "Apex class"){
+                            this.availableObjects.push({ "label": configs[i].Relationship_Name__c, "value": configs[i].Relationship_Name__c });
+                            this.initialObjectSelection.push(configs[i].Relationship_Name__c);
+                        }else{
+                            this.availableObjects.push({ "label": configs[i].Relationship_Name__c, "value": configs[i].Object__c });
+                            this.initialObjectSelection.push(configs[i].Object__c);
+                        }
+                        
+
+                    }
+                    //If the current object was filtered out, don't do any processing
+                    if(configs[i].Object__c ==='ContentDocumentLink'){
+                        if (this.objectFilters && !this.objectFilters.includes('Notes')) {
+                            continue;
+                        }
+                    }else{
+                        if (this.objectFilters && 
+                            !(
+                                this.objectFilters.includes(configs[i].Object__c) ||
+                                this.objectFilters.includes(configs[i].Relationship_Name__c)
+                            )
+                        ) {
+                            continue;
+                        }
+                    }
+
+                    let relRecords;
+                    if (configs[i].Data_Provider_Type__c === "Related Record") {
+                        if(configs[i].Object__c === 'ContentDocumentLink'){
+                            relRecords=data.otherData['ContentDocumentLink'];
+                        }else{
+                            relRecords = data.data[configs[i].Relationship_Name__c];
+                        }
+                        
+                    }
+                    let apexConfigAndData;
+                    if (configs[i].Data_Provider_Type__c === "Apex class") {
+                        apexConfigAndData = data.apexConfigData[configs[i].Relationship_Name__c];
+                        relRecords = apexConfigAndData.apexData;
+                    }
+                    
+                    
+                    if (relRecords) {
+                        this.hasTimelineData = true;
+                        var childObjLabel = data.objectLabels[configs[i].Object__c];
+                        for (let j = 0; j < relRecords.length; j++) {
+                            var item = this.createTimelineItem(configs[i], apexConfigAndData, relRecords[j],childObjLabel,data.configuration.Display_Relative_Dates__c);
+                            //backwards compatibility. Defauly relative date display to "true"
+                            item.displayRelativeDates = (data.configuration.Display_Relative_Dates__c !=null)?data.configuration.Display_Relative_Dates__c:true;
+                            if(this.showSearch){
+                                //if the search text has values, then apply the search text to filter out those that don't match
+                                if(this.searchText && this.searchText.length>=3){
+                                    if(item.title.toLowerCase().includes(this.searchText.toLowerCase())){
+                                        unsortedRecords.push(item);
+                                    }
+                                }else{
+                                    unsortedRecords.push(item);
+                                }
+                            }else{
+                                unsortedRecords.push(item);
+                            }
+                        }
+                    }
+
+
+                }
+                unsortedRecords.sort(function (a, b) {
+                    return new Date(b.dateValueDB) - new Date(a.dateValueDB);
+                });
+                this.timelineItemsByMonth = this.groupByMonth(unsortedRecords);
+                this.childRecords = unsortedRecords;
+            } else {
+                this.hasTimelineData = false;
+            }
+        } catch (error) {
+            this.errorLoadingData(error);
+        }
+
+
+    }
+
+    groupByMonth(timelineItems) {
+        var groupedByMonth = this.groupBy(timelineItems, 'monthValue');
+        //Create a monthItem for future timeline items.
+        var futureItemGroup = {};
+        futureItemGroup.monthValue = Upcoming;
+        futureItemGroup.timelineItems = new Array();
+        var timelineItemsByMonth = new Array();
+        for (let [key, value] of Object.entries(groupedByMonth)) {
+            var monthItem = {};
+            if (Date.parse(key) - new Date().getTime() > 0 ) {
+                futureItemGroup.timelineItems = futureItemGroup.timelineItems.concat(value);
+            } else {
+                var tasksByStatus = this.getTasksByStatus(value);
+                if(tasksByStatus.overdueOrFuture.length>0){
+                    futureItemGroup.timelineItems = futureItemGroup.timelineItems.concat(tasksByStatus.overdueOrFuture);
+                }
+                var childRecordsByDueStatus = this.groupChildRecordsByOverdue(value);
+                if(childRecordsByDueStatus.overdue.length>0){
+                    futureItemGroup.timelineItems = futureItemGroup.timelineItems.concat(childRecordsByDueStatus.overdue);
+                }
+                var tasksAndChildRecords = new Array();
+                tasksAndChildRecords = tasksAndChildRecords.concat(tasksByStatus.notOverdueOrPast);
+                tasksAndChildRecords = tasksAndChildRecords.concat(childRecordsByDueStatus.notOverdueOrPast);
+
+                tasksAndChildRecords.sort(function (a, b) {
+                    return new Date(b.dateValueDB) - new Date(a.dateValueDB);
+                });
+                if(tasksAndChildRecords.length>0){
+                    monthItem.monthValue = moment(key).format("MMM  •  YYYY");
+                    monthItem.firstOfMonth = moment(key).format("YYYY-MM-01");
+                    //If the month is current month don't set the timeFromNow
+                    if(!(moment(new Date()).format("YYYY-MM")===moment(monthItem.firstOfMonth).format("YYYY-MM"))){
+                        monthItem.timeFromNow = moment(monthItem.firstOfMonth).fromNow();
+                    }
+                    monthItem.timelineItems = tasksAndChildRecords;
+                    timelineItemsByMonth.push(monthItem);
+                }
+
+
+            }
+
+        }
+        timelineItemsByMonth.sort(function (a, b) {
+            return new Date(b.firstOfMonth) - new Date(a.firstOfMonth);
+        });
+
+        //Add the future items to the top of the list
+        if (futureItemGroup.timelineItems.length > 0) {
+            //Sort the future and overdue items.
+            futureItemGroup.timelineItems.sort(function (a, b) {
+                return new Date(b.dateValueDB) - new Date(a.dateValueDB);
+            });
+            timelineItemsByMonth.unshift(futureItemGroup);
+        }
+        return timelineItemsByMonth;
+
+    }
+
+    groupChildRecordsByOverdue(timelineItems){
+        var overdueRecords= new Array();
+        var notOverdueOrPast = new Array();
+
+        for(var i=0;i<timelineItems.length;i++){
+            //If it's a task and overdue or in the future
+            var timelineItem = timelineItems[i];
+            if( !timelineItem.isTask){
+                if(timelineItem.IsOverdue ){
+                    overdueRecords.push(timelineItem);
+                }else{
+                    notOverdueOrPast.push(timelineItem)
+                }
+            } 
+        }
+        return  {"overdue":overdueRecords,"notOverdueOrPast":notOverdueOrPast};;
+
+    }
+
+    getTasksByStatus(timelineItems){
+        var overdueOrFutureTasks = new Array();
+        var notOverdueOrPast = new Array();
+        for(var i=0;i<timelineItems.length;i++){
+            //If it's a task and overdue or in the future
+            if( timelineItems[i].isTask){
+                if(timelineItems[i].IsOverdue || (new Date().getTime() - Date.parse(timelineItems[i].ActivityDate) < 0))
+                {
+                    overdueOrFutureTasks.push(timelineItems[i]);
+                }else{
+                    notOverdueOrPast.push(timelineItems[i])
+                }
+            } 
+        }
+        return {"overdueOrFuture":overdueOrFutureTasks,"notOverdueOrPast":notOverdueOrPast};
+        
+    }
+    createTimelineItem(config, apexConfigAndData, recordData,objLabel,displayRelativeDates) {
+        let childRec = {};
+        childRec.isTask = false;
+        childRec.isNote = false;
+        childRec.isExternalServiceData = false;
+        childRec.isUiApiNotSupported = config.LWC_Ui_Api_Not_Supported__c;
+        childRec.object = config.Object__c;
+        //Determine navigation behaviour on clcking the title of the timeline item
+        //For backwards compatibility, the default is "Record Detail"
+        childRec.navigationBehaviour=config.Title_link_Navigate_to__c?config.Title_link_Navigate_to__c:'Record Detail';
+        //alert( childRec.navigationBehaviour);
+        if(childRec.object==='ContentDocumentLink'){
+            childRec.title = recordData.textPreview;
+            childRec.body = recordData.body;
+            childRec.isNote = true;
+            childRec.dateValueDB = recordData.createdDate;
+            childRec.createdByName=recordData.createdByName;
+            childRec.createdById=recordData.createdById;
+            childRec.recordId=recordData.recordId;
+            if(displayRelativeDates){
+                childRec.dateValue = moment(childRec.dateValueDB).fromNow();
+            }else{
+                childRec.dateValue = childRec.dateValueDB;
+            }
+            childRec.monthValue = moment(childRec.dateValueDB).format("YYYY-MM-01");
+            childRec.themeInfo = {
+                iconName: 'standard:note'
+            };
+        }else{
+            let titleFields = config.Title_Field__c.split(',');
+            let itemTitle = []; 
+            for(let i=0;i<titleFields.length;i++){
+                itemTitle.push(recordData[titleFields[i]]);
+            }
+            if(config.Display_Object_Name__c){
+                childRec.title = `${objLabel} - ${itemTitle.join(' | ')}`;
+            }else{
+                childRec.title = itemTitle.join(' | ');
+            }
+            childRec.dateValueDB = config.Date_Field__c ? recordData[config.Date_Field__c] : recordData.CreatedDate;
+            if(config.Overdue_Field__c){
+                childRec.IsOverdue = recordData[config.Overdue_Field__c];
+            }
+            if(displayRelativeDates){
+                childRec.dateValue = moment(childRec.dateValueDB).fromNow();
+            }else{
+                childRec.dateValue = childRec.dateValueDB;
+            }
+            childRec.monthValue = moment(childRec.dateValueDB).format("YYYY-MM-01");
+    
+            let fldsToDisplay = config.Fields_to_Display__c.split(',');
+            if (!childRec.isUiApiNotSupported) {
+                childRec.expandedFieldsToDisplay = new Array();
+                for (let k = 0; k < fldsToDisplay.length; k++) {
+                    childRec.expandedFieldsToDisplay.push({ "id": fldsToDisplay[k], "apiName": fldsToDisplay[k] });
+                }
+            } else {
+                childRec.expandedFieldsToDisplay = config.Fields_to_Display__c;
+            }
+            if (config.Data_Provider_Type__c === "Apex class") {
+                childRec.isExternalServiceData = true;
+                childRec.externalData = recordData;
+                childRec.externalDataFieldTypes = apexConfigAndData.fieldsWithTypes;
+                childRec.recordId = recordData[apexConfigAndData.recordIdentifierField];
+                childRec.baseUrlForRecordDetail = apexConfigAndData.baseUrlForRecordDetail;
+                childRec.isSalesforceObject = apexConfigAndData.isSalesforceObject;
+                childRec.isUiApiNotSupported=  apexConfigAndData.isUiApiNotSupported;
+            } else {
+                childRec.isExternalServiceData = false;
+                childRec.recordId = recordData.Id;
+            }
+            childRec.themeInfo = {
+                iconName: config.Icon_Name__c,
+                iconImgUrl: config.Icon_Image_Url__c,
+                color: config.Object_Color__c
+            };
+            childRec = this.setSpecialObjectValues(config,childRec,recordData);
+        }
+        
+        return childRec;
+    }
+
+    setSpecialObjectValues(config,childRec,recordData){
+        if (config.Object__c === "ContentDocumentLink") {
+            childRec.isFile=true;
+            childRec.title=recordData.ContentDocument.Title;
+            childRec.description=recordData.ContentDocument.description;
+            childRec.documentId=recordData.ContentDocumentId;
+        }
+        if (config.Object__c === "CaseArticle") {
+            childRec.isKnowledgeArticle=true;
+            childRec.title=recordData.KnowledgeArticleVersion.Title;
+            childRec.description=recordData.KnowledgeArticleVersion.Summary;
+            childRec.articleType=recordData.KnowledgeArticleVersion.ArticleType;
+            childRec.urlName=recordData.KnowledgeArticleVersion.UrlName;
+        }
+        if (config.Object__c === "Task") {
+            //Special fields for Task
+            childRec.isTask = true;
+            childRec.isCustom = false;
+            childRec.description = recordData.Description;
+            childRec.WhoId = recordData.WhoId;
+            childRec.OwnerId = recordData.OwnerId;
+            childRec.IsClosed = recordData.IsClosed;
+            childRec.ActivityDate=recordData.ActivityDate;
+            //Flag as overdue of the Task is not complete and the due date is past today
+            childRec.IsOverdue = !childRec.IsClosed && (new Date().getTime() - Date.parse(childRec.ActivityDate)>0);
+            childRec.assignedToName = (childRec.OwnerId === CURRENT_USER_ID) ? You : recordData.Owner.Name;
+            if (recordData.Who) {
+                childRec.whoToName = recordData.Who.Name;
+            }
+            childRec.TaskSubtype = recordData.TaskSubtype;
+
+        }
+        return childRec;
+    }
+    errorLoadingData(error) {
+
+        this.error = true;
+        if (error.body && error.body.exceptionType && error.body.message) {
+            this.errorMsg = `[ ${error.body.exceptionType} ] : ${error.body.message}`;
+        } else {
+            this.errorMsg = JSON.stringify(error);
+        }
+    }
+    get isParametersValid() {
+        return (this.recordId != null && this.configId != null)
+    }
+
+    get timelineStyles() {
+        if (this.additionalMargin) {
+            return 'slds-card ' + this.additionalMargin;
+        } else {
+            return 'slds-card';
+        }
+    }
+
+    get filterStyles() {
+        let filterStyle = '';
+        if (this.showFilter) {
+            filterStyle += 'display:block;';
+        } else {
+            filterStyle += 'display:none;';
+        }
+        filterStyle += 'position:absolute;top:2.25rem;left:-285px;width:300px;'
+        return filterStyle;
+    }
+    showHideFilters() {
+        this.showFilter = !this.showFilter;
+    }
+
+    get dateFilterOptions() {
+        return [
+            { label: 'All Time', value: 'all_time' },
+            { label: 'Last 7 days', value: 'last_7_days' },
+            { label: 'Next 7 days', value: 'next_7_days' },
+            { label: 'Last 30 days', value: 'last_30_days' },
+        ];
+    }
+
+    handleFilterChange(event) {
+        if (event.detail.dateFilter) {
+            this.dateFilterSelection = event.detail.dateFilter;
+            this.objectFilters = event.detail.objectFilter;
+            this.refreshData();
+        }
+    }
+
+    handleExpandCollapseEvent(event){
+        publish(this.messageContext, timelineItemState, {
+            "expanded":event.detail.expanded
+        });
+    }
+
+    handleSearch(event) {
+        this.searchText=event.detail.value;
+        this.processTimelineData(this.serverData);
+    }
+
+    get filteredObjects() {
+        return this.objectFilters != null ? this.objectFilters : this.initialObjectSelection;
+    }
+
+    groupBy(xs, key) {
+        return xs.reduce(function (rv, x) {
+            (rv[x[key]] = rv[x[key]] || []).push(x);
+            return rv;
+        }, {});
+    }
+}

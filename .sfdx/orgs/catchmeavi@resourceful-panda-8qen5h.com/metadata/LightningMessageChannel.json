@@ -1,0 +1,57 @@
+{
+  "status": 0,
+  "result": [
+    {
+      "createdById": "005Dn000002Cfj1IAC",
+      "createdByName": "Avijit Chakraborty",
+      "createdDate": "2022-12-01T20:41:22.000Z",
+      "fileName": "messageChannels/ApiComponentState.messageChannel",
+      "fullName": "ApiComponentState",
+      "id": "129Dn0000008QMFIA2",
+      "lastModifiedById": "005Dn000002Cfj1IAC",
+      "lastModifiedByName": "Avijit Chakraborty",
+      "lastModifiedDate": "2022-12-01T20:41:22.000Z",
+      "manageableState": "unmanaged",
+      "type": "LightningMessageChannel"
+    },
+    {
+      "createdById": "005Dn000002Cfj1IAC",
+      "createdByName": "Avijit Chakraborty",
+      "createdDate": "2022-12-01T20:41:22.000Z",
+      "fileName": "messageChannels/RestApiRequest.messageChannel",
+      "fullName": "RestApiRequest",
+      "id": "129Dn0000008QMGIA2",
+      "lastModifiedById": "005Dn000002Cfj1IAC",
+      "lastModifiedByName": "Avijit Chakraborty",
+      "lastModifiedDate": "2022-12-01T20:41:22.000Z",
+      "manageableState": "unmanaged",
+      "type": "LightningMessageChannel"
+    },
+    {
+      "createdById": "005Dn000002Cfj1IAC",
+      "createdByName": "Avijit Chakraborty",
+      "createdDate": "2022-12-01T20:41:22.000Z",
+      "fileName": "messageChannels/RestApiResponse.messageChannel",
+      "fullName": "RestApiResponse",
+      "id": "129Dn0000008QMHIA2",
+      "lastModifiedById": "005Dn000002Cfj1IAC",
+      "lastModifiedByName": "Avijit Chakraborty",
+      "lastModifiedDate": "2022-12-01T20:41:22.000Z",
+      "manageableState": "unmanaged",
+      "type": "LightningMessageChannel"
+    },
+    {
+      "createdById": "005Dn000002Cfj1IAC",
+      "createdByName": "Avijit Chakraborty",
+      "createdDate": "2022-12-01T20:41:22.000Z",
+      "fileName": "messageChannels/TimelineItemState.messageChannel",
+      "fullName": "TimelineItemState",
+      "id": "129Dn0000008QMIIA2",
+      "lastModifiedById": "005Dn000002Cfj1IAC",
+      "lastModifiedByName": "Avijit Chakraborty",
+      "lastModifiedDate": "2022-12-01T20:41:22.000Z",
+      "manageableState": "unmanaged",
+      "type": "LightningMessageChannel"
+    }
+  ]
+}

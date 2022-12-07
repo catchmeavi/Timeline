@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>50.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Select fields for Config</masterLabel>
+    <description>Select fields for Config</description>
+    <targets>
+        <target>lightning__FlowScreen</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__FlowScreen">
+            <property name="childObjectApiName" role="inputOnly" type="String"/>
+            <property name="relationshipName" type="String"/>
+            <property name="stepName" role="inputOnly" type="String"/>
+            <property name="selectedFields" role="outputOnly" type="String"/>
+            <property name="iconImageUrl" type="String"/>
+            <property name="iconName" type="String"/>
+            <property name="objectColor" type="String"/>
+            <property name="displayFields" type="String"/>
+            <property name="dateField" type="String"/>
+            <property name="titleField" type="String"/>
+            <property name="whereClause" type="String"/>
+            <property name="filterConfigJson" type="String"/>
+            <property name="uiApiNotSupported" type="Boolean" role="outputOnly"/>
+            <property name="selectedApexClass" type="String" role="inputOnly"/>
+            <property name="providerType" type="String" role="inputOnly"/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

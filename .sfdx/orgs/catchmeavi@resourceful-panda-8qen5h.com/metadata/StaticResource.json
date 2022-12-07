@@ -1,0 +1,97 @@
+{
+  "status": 0,
+  "result": [
+    {
+      "createdById": "005Dn000002Cfj1IAC",
+      "createdByName": "Avijit Chakraborty",
+      "createdDate": "2022-12-01T20:42:55.000Z",
+      "fileName": "staticresources/mustache_js.resource",
+      "fullName": "mustache_js",
+      "id": "081Dn000000IJjNIAW",
+      "lastModifiedById": "005Dn000002Cfj1IAC",
+      "lastModifiedByName": "Avijit Chakraborty",
+      "lastModifiedDate": "2022-12-01T20:42:55.000Z",
+      "manageableState": "unmanaged",
+      "type": "StaticResource"
+    },
+    {
+      "createdById": "005Dn000002Cfj1IAC",
+      "createdByName": "Avijit Chakraborty",
+      "createdDate": "2022-12-01T20:42:55.000Z",
+      "fileName": "staticresources/moment_js.resource",
+      "fullName": "moment_js",
+      "id": "081Dn000000IJjMIAW",
+      "lastModifiedById": "005Dn000002Cfj1IAC",
+      "lastModifiedByName": "Avijit Chakraborty",
+      "lastModifiedDate": "2022-12-01T20:42:55.000Z",
+      "manageableState": "unmanaged",
+      "type": "StaticResource"
+    },
+    {
+      "createdById": "005Dn000002Cfj1IAC",
+      "createdByName": "Avijit Chakraborty",
+      "createdDate": "2022-12-02T17:19:52.000Z",
+      "fileName": "staticresources/OverrideCSS.resource",
+      "fullName": "OverrideCSS",
+      "id": "081Dn000000ILGsIAO",
+      "lastModifiedById": "005Dn000002Cfj1IAC",
+      "lastModifiedByName": "Avijit Chakraborty",
+      "lastModifiedDate": "2022-12-02T17:19:52.000Z",
+      "manageableState": "unmanaged",
+      "type": "StaticResource"
+    },
+    {
+      "createdById": "005Dn000002Cfj1IAC",
+      "createdByName": "Avijit Chakraborty",
+      "createdDate": "2022-12-01T20:42:55.000Z",
+      "fileName": "staticresources/jsforce.resource",
+      "fullName": "jsforce",
+      "id": "081Dn000000IJjKIAW",
+      "lastModifiedById": "005Dn000002Cfj1IAC",
+      "lastModifiedByName": "Avijit Chakraborty",
+      "lastModifiedDate": "2022-12-01T20:42:55.000Z",
+      "manageableState": "unmanaged",
+      "type": "StaticResource"
+    },
+    {
+      "createdById": "005Dn000002Cfj1IAC",
+      "createdByName": "Avijit Chakraborty",
+      "createdDate": "2022-12-01T17:20:17.000Z",
+      "fileName": "staticresources/trlhdtips__tt_penpal.resource",
+      "fullName": "trlhdtips__tt_penpal",
+      "id": "081Dn000001pVf9IAE",
+      "lastModifiedById": "005Dn000002Cfj1IAC",
+      "lastModifiedByName": "Avijit Chakraborty",
+      "lastModifiedDate": "2022-12-01T17:20:17.000Z",
+      "manageableState": "installed",
+      "namespacePrefix": "trlhdtips",
+      "type": "StaticResource"
+    },
+    {
+      "createdById": "005Dn000002Cfj1IAC",
+      "createdByName": "Avijit Chakraborty",
+      "createdDate": "2022-12-01T20:42:55.000Z",
+      "fileName": "staticresources/lodash_js.resource",
+      "fullName": "lodash_js",
+      "id": "081Dn000000IJjLIAW",
+      "lastModifiedById": "005Dn000002Cfj1IAC",
+      "lastModifiedByName": "Avijit Chakraborty",
+      "lastModifiedDate": "2022-12-01T20:42:55.000Z",
+      "manageableState": "unmanaged",
+      "type": "StaticResource"
+    },
+    {
+      "createdById": "005Dn000002Cfj1IAC",
+      "createdByName": "Avijit Chakraborty",
+      "createdDate": "2022-12-01T20:42:55.000Z",
+      "fileName": "staticresources/penpal.resource",
+      "fullName": "penpal",
+      "id": "081Dn000000IJjOIAW",
+      "lastModifiedById": "005Dn000002Cfj1IAC",
+      "lastModifiedByName": "Avijit Chakraborty",
+      "lastModifiedDate": "2022-12-01T20:42:55.000Z",
+      "manageableState": "unmanaged",
+      "type": "StaticResource"
+    }
+  ]
+}

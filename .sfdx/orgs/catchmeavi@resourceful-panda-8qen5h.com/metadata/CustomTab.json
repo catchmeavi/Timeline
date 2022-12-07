@@ -1,0 +1,60 @@
+{
+  "status": 0,
+  "result": [
+    {
+      "createdById": "005Dn000002Cfj1IAC",
+      "createdByName": "Avijit Chakraborty",
+      "createdDate": "2022-12-01T17:20:17.000Z",
+      "fileName": "tabs/trlhdtips__Install_a_Package.tab",
+      "fullName": "trlhdtips__Install_a_Package",
+      "id": "01rDn000001Ii1lIAC",
+      "lastModifiedById": "005Dn000002Cfj1IAC",
+      "lastModifiedByName": "Avijit Chakraborty",
+      "lastModifiedDate": "2022-12-01T17:20:17.000Z",
+      "manageableState": "installed",
+      "namespacePrefix": "trlhdtips",
+      "type": "CustomTab"
+    },
+    {
+      "createdById": "005Dn000002Cfj1IAC",
+      "createdByName": "Avijit Chakraborty",
+      "createdDate": "2022-12-01T17:20:17.000Z",
+      "fileName": "tabs/trlhdtips__Welcome.tab",
+      "fullName": "trlhdtips__Welcome",
+      "id": "01rDn000001Ii1mIAC",
+      "lastModifiedById": "005Dn000002Cfj1IAC",
+      "lastModifiedByName": "Avijit Chakraborty",
+      "lastModifiedDate": "2022-12-01T17:20:17.000Z",
+      "manageableState": "installed",
+      "namespacePrefix": "trlhdtips",
+      "type": "CustomTab"
+    },
+    {
+      "createdById": "005Dn000002Cfj1IAC",
+      "createdByName": "Avijit Chakraborty",
+      "createdDate": "2022-12-01T23:10:25.000Z",
+      "fileName": "tabs/Timeline_Configuration__c.tab",
+      "fullName": "Timeline_Configuration__c",
+      "id": "01rDn000000TnOGIA0",
+      "lastModifiedById": "005Dn000002Cfj1IAC",
+      "lastModifiedByName": "Avijit Chakraborty",
+      "lastModifiedDate": "2022-12-01T23:10:25.000Z",
+      "manageableState": "unmanaged",
+      "type": "CustomTab"
+    },
+    {
+      "createdById": "005Dn000002Cfj1IAC",
+      "createdByName": "Avijit Chakraborty",
+      "createdDate": "2022-12-01T17:20:17.000Z",
+      "fileName": "tabs/trlhdtips__Get_Your_Login_Credentials.tab",
+      "fullName": "trlhdtips__Get_Your_Login_Credentials",
+      "id": "01rDn000001Ii1kIAC",
+      "lastModifiedById": "005Dn000002Cfj1IAC",
+      "lastModifiedByName": "Avijit Chakraborty",
+      "lastModifiedDate": "2022-12-01T17:20:17.000Z",
+      "manageableState": "installed",
+      "namespacePrefix": "trlhdtips",
+      "type": "CustomTab"
+    }
+  ]
+}
